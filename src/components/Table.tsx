@@ -3,11 +3,12 @@ import { User } from "../models/User";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { Link } from "react-router-dom";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
-import RefreshIcon from "@mui/icons-material/Refresh";
+// import RefreshIcon from "@mui/icons-material/Refresh";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import Filter from "./Filter";
 import { Delete } from "@mui/icons-material";
 import Pagination from "./Pagination";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 
 const Table = (props: any) => {
   const [users, setUsers] = useState<User[]>([]);
@@ -222,9 +223,20 @@ const Table = (props: any) => {
     const data = await res.json();
     console.log(data);
     fetchUsers();
+
+    alert("User Deleted Successfully")
   };
+
+  const handleDrag=(results:any)=>{
+    console.log(results)
+    let tempuser=[...users];
+    let [selectedRow]=tempuser.splice(results.source.index,1);
+    tempuser.splice(results.destination.index,0,selectedRow);
+    setUsers(tempuser)
+  }
   return (
     <div style={{ marginTop: "5rem" }}>
+      <DragDropContext onDragEnd={(results)=>{handleDrag(results)}}>
       <table className="table">
         <thead>
           <tr>
@@ -300,11 +312,18 @@ const Table = (props: any) => {
         {fil && (
           <Filter type={type} dummyUsers={dummyUsers} setUsers={setUsers} />
         )}
-        <tbody>
-          {currentRecords.map((item: User) => {
+        <Droppable droppableId="tbody">
+          {
+            (provided)=>(
+              <tbody ref={provided.innerRef} {...provided.droppableProps}>
+          {currentRecords.map((item: User,index:number) => {
             return (
-              <tr>
+              <Draggable draggableId={item.id.toString()} index={index}>
+                {
+                (provided)=>(
+                  <tr ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
                 <th scope="row">{item.id}</th>
+                
                 {item.isEditAble ? (
                   <td>
                     <input
@@ -314,7 +333,8 @@ const Table = (props: any) => {
                     />
                   </td>
                 ) : (
-                  <td
+                  
+                  <td {...provided.dragHandleProps}
                     onDoubleClick={() => {
                       handleDoubleClick(item.id, "firstName");
                     }}
@@ -377,17 +397,24 @@ const Table = (props: any) => {
                   <Delete />
                 </td>
               </tr>
+                )}
+              </Draggable>
             );
           })}
+          {provided.placeholder}
         </tbody>
+            )
+          }
+        </Droppable>
       </table>
+      </DragDropContext>
       <Pagination
         nPages={nPages}
         current={currentPage}
         setCurrentPage={setCurrentPage}
       />
-      <div onClick={Refresh}>
-        <RefreshIcon />
+      <div onClick={Refresh} style={{marginBottom:"2em"}}>
+        <button>Refresh</button>
       </div>
     </div>
   );

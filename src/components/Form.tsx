@@ -35,6 +35,8 @@ const Form = () => {
     const d1 = await res.json();
     console.log(d1);
     setTog(!tog);
+
+    alert("User Added Successfully");
   };
   return (
     <div>
@@ -82,7 +84,7 @@ const Form = () => {
         </div>
         <br />
         <button type="submit" className="btn btn-primary">
-          Submit
+          Add User
         </button>
       </form>
       <Table tog={tog} />
